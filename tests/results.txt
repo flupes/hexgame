@@ -1,0 +1,52 @@
+Performance results obtained on an Ubuntu 16.04 VM (Macbook Pro)
+----------------------------------------------------------------
+
+Adding 1000 elements chosen randomly from an array of 1M numbers is only
+between 1.7 (for int32) and 2.7 (for int8) times slower in python versus C!
+
+Pure C code:
+============
+~/source/hexgame/tests (master)
+$ gcc -Wall -pg -o vector_elmts_sum vector_elmts_sum.c
+~/source/hexgame/tests (master)
+$ ./vector_elmts_sum 1000000 1000 1000000
+sum8 = -1357192480
+sum32 = -1055107616
+~/source/hexgame/tests (master)
+$ gprof --brief vector_elmts_sum
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  us/call  us/call  name    
+ 53.67      8.00     8.00  1000000     8.00     8.00  compute_sum32
+ 24.88     11.70     3.71  1000000     3.71     3.71  shuffle_indices
+ 21.91     14.97     3.26  1000000     3.26     3.26  compute_sum8
+  0.00     14.97     0.00        1     0.00     0.00  clean
+  0.00     14.97     0.00        1     0.00     0.00  init
+
+python3 + numpy:
+================
+~/source/hexgame/tests (master)
+$ python3 -m cProfile -s cumtime vector_elmts_sum.py 1000000 1000 1000000 > stats.txt &&  head -n 20 stats.txt
+sum8 = -1634
+sum32 = 510560670
+         12046555 function calls (12044606 primitive calls) in 32.086 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    116/1    0.002    0.000   32.086   32.086 {built-in method builtins.exec}
+        1    0.000    0.000   32.086   32.086 vector_elmts_sum.py:5(<module>)
+        1    1.140    1.140   32.026   32.026 vector_elmts_sum.py:29(main)
+  1000000    9.735    0.000   13.840    0.000 vector_elmts_sum.py:22(compute_sum_32)
+  1000000    4.798    0.000    8.938    0.000 vector_elmts_sum.py:26(compute_sum_8)
+  2000000    1.545    0.000    8.246    0.000 fromnumeric.py:1743(sum)
+  1000000    0.579    0.000    8.106    0.000 vector_elmts_sum.py:17(shuffle_indices)
+  1000000    7.527    0.000    7.527    0.000 {method 'randint' of 'mtrand.RandomState' objects}
+  2000000    0.526    0.000    6.381    0.000 _methods.py:31(_sum)
+  2000000    5.855    0.000    5.855    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+  2001928    0.320    0.000    0.320    0.000 {built-in method builtins.isinstance}
+        4    0.000    0.000    0.084    0.021 __init__.py:1(<module>)
+    133/3    0.001    0.000    0.060    0.020 <frozen importlib._bootstrap>:966(_find_and_load)
+
