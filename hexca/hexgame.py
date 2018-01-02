@@ -21,7 +21,7 @@ class HexMap(hexworld.HexWorld):
         self.map_radius = map_radius
         self.hex_radius = hex_radius
         self.screen_size = screen_size
-        self.screen_center = tuple(divmod(d,2)[0] for d in screen_size)
+        self.screen_center = tuple(d // 2 for d in screen_size)
         self.grid_size = hexu.map_px_size(map_radius, hex_radius)
         self.grid_offset = ( 0.5 * ( screen_size[0] - self.grid_size[0] ),
                 0.5 * ( screen_size[1] - self.grid_size[1] ) )
@@ -127,6 +127,7 @@ legend.append( font.render("random: e / r / t", 1, GREEN) )
 legend.append( font.render("speed: s / d / f", 1, GREEN) )
 legend.append( font.render("run/pause: SPACEBAR", 1, GREEN) )
 legend.append( font.render("step one cycle (next): n", 1, GREEN) )
+legend.append( font.render("toggle use extended neighbors: x", 1, GREEN) )
 legend.append( font.render("environment rule: {1,2,3,4,5,6}", 1, GREEN) )
 legend.append( font.render("fertility rule: SHIFT+{1,2,3,4,5,6}", 1, GREEN) )
 
@@ -165,6 +166,8 @@ while not done:
                 hmap.random(0.5, int(randradius[0]*hmap.map_radius))
             elif event.key == pygame.K_t:
                 hmap.random(0.8, int(randradius[0]*hmap.map_radius))
+            elif event.key == pygame.K_x:
+                hmap.use_extended_neighbors = not hmap.use_extended_neighbors
             elif (pygame.key.get_mods() & pygame.KMOD_SHIFT):
                 if event.key == pygame.K_1:
                     toggle_rule(hmap.rules_fertility, 1)
@@ -178,6 +181,12 @@ while not done:
                     toggle_rule(hmap.rules_fertility, 5)
                 elif event.key == pygame.K_6:
                     toggle_rule(hmap.rules_fertility, 6)
+                elif event.key == pygame.K_7:
+                    toggle_rule(hmap.rules_fertility, 7)
+                elif event.key == pygame.K_8:
+                    toggle_rule(hmap.rules_fertility, 8 )
+                elif event.key == pygame.K_9:
+                    toggle_rule(hmap.rules_fertility, 9 )                    
             elif event.key == pygame.K_1:
                 toggle_rule(hmap.rules_environment, 1)
             elif event.key == pygame.K_2:
@@ -190,7 +199,13 @@ while not done:
                 toggle_rule(hmap.rules_environment, 5)
             elif event.key == pygame.K_6:
                 toggle_rule(hmap.rules_environment, 6)
-                
+            elif event.key == pygame.K_7:
+                toggle_rule(hmap.rules_environment, 7)
+            elif event.key == pygame.K_8:
+                toggle_rule(hmap.rules_environment, 8)
+            elif event.key == pygame.K_9:
+                toggle_rule(hmap.rules_environment, 9)
+
     # Clear the screen
     screen.fill(BLACK)
     
@@ -208,6 +223,7 @@ while not done:
     info.append( font.render("map radius = {0:d}".format(hmap.map_radius), 1, GREEN) )
     info.append( font.render("number of cells = {0:d}".format(len(hmap)), 1, GREEN) )
     info.append( font.render("number of cycles = {0:d}".format(hmap.cycles), 1, GREEN) )
+    info.append( font.render("use extended neighbors = {0}".format(hmap.use_extended_neighbors), 1, GREEN) )
     info.append( font.render("environment rule = {0:s}".format(str(hmap.rules_environment)), 1, GREEN) )
     info.append( font.render("fertility rule = {0:s}".format(str(hmap.rules_fertility)), 1, GREEN) )
     if not active:
