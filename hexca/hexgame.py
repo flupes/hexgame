@@ -63,9 +63,11 @@ class HexMap(hexworld.HexWorld):
 
 
     def draw_cells(self, screen):
+        color = pygame.Color(255, 255, 0)
         for c in self.cells:
             points = self.coords_map[c]
-            pygame.draw.polygon(screen, YELLOW, points)
+            color.hsva = (self.colors[c][0], self.colors[c][1], 100, 100)
+            pygame.draw.polygon(screen, color, points)
 
 # Initialize Pygame
 pygame.init()
