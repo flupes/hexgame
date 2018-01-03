@@ -110,6 +110,7 @@ print('Number of Cells = %d' % len(hmap))
 
 # Seeds the world
 hmap.random(0.5, int(0.75*hmap.map_radius))
+#hmap.cluster(4, 10, 0.5)
 
 counter = 0
 skip = 2
@@ -123,7 +124,7 @@ font = pygame.font.Font(None, font_size)
 
 legend = []
 legend.append( font.render("quit: ESC", 1, GREEN) )
-legend.append( font.render("clear map: c", 1, GREEN) )
+legend.append( font.render("cluster map: c", 1, GREEN) )
 legend.append( font.render("random radius: a", 1, GREEN) )
 legend.append( font.render("random: e / r / t", 1, GREEN) )
 legend.append( font.render("speed: s / d / f", 1, GREEN) )
@@ -159,7 +160,7 @@ while not done:
             elif event.key == pygame.K_f:
                 skip = 1
             elif event.key == pygame.K_c:
-                hmap.clear()
+                hmap.cluster(9, 9, 0.4)
             elif event.key == pygame.K_a:
                 randradius.rotate()
             elif event.key == pygame.K_e:

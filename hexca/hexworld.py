@@ -68,11 +68,58 @@ class HexWorld:
             self.cells = set( random.sample( potential_cells,
                                 k = int( density * len(potential_cells) ) ) )
             for c in self.cells:
-                self.colors[c] = random.choice( [(60,100), (180,100), (300,100)] )
+                self.colors[c] = random.choice( [(60,100), (60,100), (60,100), (60,100), (180,100), (300,100)] )
+                self.potential_population.add(c)
                 self.potential_population.update(self.neighbors[c][0] | self.neighbors[c][1])
         else:
             raise ValueError('initial_radius is larger than map_radius')
+    
+    def cluster(self, number, seed_radius, density):
+        self.clear()
+        radius_variation = seed_radius // 2
+        max_radius = self.map_radius - seed_radius - radius_variation
+        center_choices = [c for c in hexu.hexagonal_map_gen(max_radius)]
+        if  radius_variation < seed_radius and seed_radius < max_radius:
+            for i in range(0, number):
+                color = random.choice([(60,100), (180, 100), (300,100)])                
+                radius = seed_radius + random.randint(-radius_variation, radius_variation)
+                center = random.choice(center_choices)
+                potential_cells = [hexu.cells_add(center, c) 
+                                    for c in hexu.hexagonal_map_gen(radius) ]
+                selected_cells = set( random.sample( potential_cells,
+                                    k = int( density * len(potential_cells) ) ) )
+                self.cells.update(selected_cells)
+                for c in selected_cells:
+                    self.colors[c] = color
+            for c in self.cells:
+                self.potential_population.add(c)
+                self.potential_population.update(self.neighbors[c][0] | self.neighbors[c][1])
+        else:
+            raise ValueError('invalid seed radius')
+    
+
+
+    def _update_color_(self, cell, colormap):
+        intensity = self.colors[cell][1]
+        if intensity == 100:
+            intensity = 70
+        elif intensity > 25:
+            intensity -= 5
+        colormap[cell] = (self.colors[cell][0], intensity)
         
+    def _select_color_(self, cell, colormap):
+        hue = 0
+        count = 0
+        for n in self.neighbors[cell][0]:
+            # only use the two first parents
+            if count == 2:
+                break
+            if n in self.cells:
+                hue += self.colors[n][0]
+                count += 1
+        hue = ( hue // count ) % 360
+        colormap[cell] = (hue, 100)
+
     def evolve(self):
         next_generation = set()
         next_candidates = set()
@@ -86,25 +133,13 @@ class HexWorld:
             if c in self.cells:
                 if alive_neighbors in self.rules_environment:
                     next_generation.add(c)
-                    intensity = self.colors[c][1]
-                    if intensity == 100:
-                        intensity = 70
-                    elif intensity > 25:
-                        intensity -= 5
-                    next_colors[c] = (self.colors[c][0], intensity)
+                    self._update_color_(c, next_colors)
                     next_candidates.add(c)
                     next_candidates.update(self.neighbors[c][0] | self.neighbors[c][1])
             else:
                 if alive_neighbors in self.rules_fertility:
                     next_generation.add(c)
-                    hue = 0
-                    count = 0
-                    for n in self.neighbors[c][0]:
-                        if n in self.cells:
-                            hue += self.colors[n][0]
-                            count += 1
-                    hue = ( hue // count ) % 360
-                    next_colors[c] = (hue, 100)
+                    self._select_color_(c, next_colors)
                     next_candidates.add(c)
                     next_candidates.update(self.neighbors[c][0] | self.neighbors[c][1])
         self.cells = next_generation
